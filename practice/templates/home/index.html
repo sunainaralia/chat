@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <h1>new chat app</h1>
+    <textarea id="chat-bar" cols="80" rows="20">
+        {% for i in data %}
+        {{i.content}}
+        {% endfor %}
+    </textarea><br>
+    <input type="text" id="input"><br>
+    <input type="submit" id="send" value="Send">
+    {{groupname|json_script:"group"}}
+    <script>
+        const groupnam = JSON.parse(document.getElementById("group").textContent)
+        var ws = new WebSocket('ws://' + window.location.host + '/sc/' + groupnam + '/')
+        ws.onopen = function (event) {
+            console.log('connection is occured', event)
+        }
+        ws.onmessage = function (event) {
+            data = JSON.parse(event.data)
+            document.querySelector("#chat-bar").value += (data.user + ':' + data.msg + '\n')
+        }
+        ws.onerror = function (event) {
+            console.log('connection have error occured', event)
+        }
+        ws.onclose = function (event) {
+            console.log('connection is closed', event)
+        }
+        document.getElementById("send").onclick = function (event) {
+            messagedom = document.getElementById("input")
+            message = messagedom.value
+            ws.send(JSON.stringify({
+                'msg': message
+            }))
+            messagedom = ''
+        }
+
+    </script>
+</body>
+
+</html>
